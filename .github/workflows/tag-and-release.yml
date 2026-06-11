@@ -1,5 +1,4 @@
-name: Publish Windows
-
+name: Publish
 on:
   push:
     branches:
@@ -30,6 +29,15 @@ jobs:
         run: |
           npm install
           npm run rebuild:all
+
+      - name: 🏷 Create release tag
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          git tag "v${VERSION}" || echo "Tag already exists"
+          git push origin "v${VERSION}" || echo "Tag already pushed"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Publish Windows release
         env:
