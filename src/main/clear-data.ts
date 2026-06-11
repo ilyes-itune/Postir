@@ -1,12 +1,24 @@
 import { app, dialog, ipcMain } from 'electron';
 import fs from 'fs-extra';
+import path from 'path';
 
 import { closeAll } from './database';
 import { logger } from './log';
-import { getFilesystemNodeBasePath, getLegacySqliteBasePath } from './rxdb-storage';
 import { t } from './translations';
 
 const CLEAR_APP_DATA_ON_STARTUP_ARG = '--clear-app-data-on-startup';
+
+function getLegacySqliteBasePath(): string {
+	return process.env.NODE_ENV === 'development'
+		? path.resolve('databases')
+		: path.resolve(app.getPath('userData'), 'wcpos_dbs');
+}
+
+function getFilesystemNodeBasePath(): string {
+	return process.env.NODE_ENV === 'development'
+		? path.resolve('filesystem-databases')
+		: path.resolve(app.getPath('userData'), 'wcpos_fsdbs');
+}
 
 const getDbFolders = () => [getLegacySqliteBasePath(), getFilesystemNodeBasePath()];
 
@@ -17,7 +29,6 @@ const getRelaunchArgs = () => [
 
 const clearAppDataFolders = async () => {
 	const dbFolders = getDbFolders();
-
 	closeAll();
 	await Promise.all(dbFolders.map((folder) => fs.remove(folder)));
 	logger.info(`${t('app.cleared_app_data')} (${dbFolders.join(', ')})`);
@@ -27,7 +38,6 @@ export const clearPendingAppDataOnStartup = async () => {
 	if (!process.argv.includes(CLEAR_APP_DATA_ON_STARTUP_ARG)) {
 		return;
 	}
-
 	try {
 		await clearAppDataFolders();
 	} catch (err) {
@@ -40,7 +50,6 @@ export const clearAppDataDialog = () => {
 		'By clicking proceed you will be removing all added accounts and preferences for WCPOS. ' +
 			'When the application restarts, it will be as if you are starting WCPOS for the first time.'
 	);
-
 	dialog
 		.showMessageBox({
 			type: 'warning',
@@ -50,9 +59,6 @@ export const clearAppDataDialog = () => {
 		})
 		.then(({ response }) => {
 			if (response === 0) {
-				// Close legacy sqlite connections and relaunch before deleting all db folders.
-				// filesystem-node storage has no explicit close, so the relaunched process clears it
-				// before the storage bridge is initialised and opens filesystem handles.
 				try {
 					closeAll();
 					app.relaunch({ args: getRelaunchArgs() });
