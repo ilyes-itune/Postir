@@ -111,7 +111,7 @@ const config: ForgeConfig = {
 			setupIcon: path.resolve(__dirname, 'icons/icon.ico'),
 			loadingGif: path.resolve(__dirname, 'icons/installing.gif'),
 		}),
-		new MakerZIP({}, ['darwin']),
+		/*new MakerZIP({}, ['darwin']),
 		new MakerDMG(
 			{
 				format: 'ULFO',
@@ -191,7 +191,7 @@ const config: ForgeConfig = {
 				},
 			},
 			['linux']
-		),
+		),*/
 	],
 	publishers: [
 		new PublisherGithub({
