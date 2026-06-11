@@ -17,7 +17,7 @@
 		"dev": "concurrently \"pnpm run dev:expo\" \"pnpm run dev:electron\"",
 		"dev:expo": "ELECTRON=true EXPO_NO_METRO_LAZY=true BROWSER=none pnpm --filter @wcpos/main dev --web --port ${EXPO_PORT:-8088} --clear",
 		"dev:electron": "NODE_ENV=\"development\" electron-forge start --enable-logging",
-		"rebuild:all": "electron-rebuild -f -o better-sqlite3 && electron-rebuild -f -o usb",
+		"rebuild:all": "electron-rebuild -f -o better-sqlite3",
 		"package": "DEBUG=electron-osx-sign* electron-forge package",
 		"make": "electron-forge make",
 		"publish-app": "electron-forge publish",
@@ -45,8 +45,6 @@
 	"devDependencies": {
 		"@electron-forge/cli": "^7.8.3",
 		"@electron-forge/maker-squirrel": "^7.8.3",
-		"@electron-forge/maker-zip": "^7.8.3",
-		"@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
 		"@electron-forge/plugin-webpack": "^7.8.3",
 		"@electron-forge/publisher-github": "^7.8.3",
 		"@electron-forge/shared-types": "^7.8.3",
