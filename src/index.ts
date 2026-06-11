@@ -5,7 +5,6 @@ import { clearPendingAppDataOnStartup } from './main/clear-data';
 import { installExtensions } from './main/extensions';
 import { registerBluetoothSelection } from './main/bluetooth-select';
 import { logger } from './main/log';
-import { initializeRxdbStorageBridge } from './main/rxdb-storage';
 import { registerMenu } from './main/menu';
 import { initProtocolHandling } from './main/protocol';
 import { loadTranslations } from './main/translations';
@@ -41,7 +40,6 @@ app
 	.then(loadTranslations)
 	.then(clearPendingAppDataOnStartup)
 	.then(installExtensions)
-	.then(initializeRxdbStorageBridge)
 	.then(() => {
 		logger.info('Starting app');
 		createWindow();
