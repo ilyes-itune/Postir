@@ -2,13 +2,21 @@ import fs from 'fs';
 import path from 'path';
 
 import Database from 'better-sqlite3';
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 
 import { logger } from './log';
-import { getLegacySqliteBasePath } from './rxdb-storage';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const registry = new Map<string, Database.Database>();
+
+/**
+ * Chemin du dossier SQLite (extrait de rxdb-storage.ts, supprimé car rxdb-premium retiré)
+ */
+function getLegacySqliteBasePath(): string {
+	return isDevelopment
+		? path.resolve('databases')
+		: path.resolve(app.getPath('userData'), 'wcpos_dbs');
+}
 
 const openDatabase = (name: string) => {
 	if (registry.has(name)) {
