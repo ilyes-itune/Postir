@@ -5,7 +5,7 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 import { PublisherGithub } from '@electron-forge/publisher-github';
 import { move, pathExists, remove } from 'fs-extra';
-
+import { MakerZIP } from '@electron-forge/maker-zip';
 import pkg from './package.json';
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
@@ -59,11 +59,7 @@ const config: ForgeConfig = {
 		},
 	},
 	makers: [
-		new MakerSquirrel({
-			name: 'POSTir',
-			setupIcon: path.resolve(__dirname, 'icons/icon.ico'),
-			loadingGif: path.resolve(__dirname, 'icons/installing.gif'),
-		}),
+		new MakerZIP({}, ['win32']),
 	],
 	publishers: [
 		new PublisherGithub({
