@@ -69,7 +69,7 @@ const config: ForgeConfig = {
 		new PublisherGithub({
 			repository: {
 				owner: 'ilyes-itune',
-				name: 'postir-electron',
+				name: 'Postir',
 			},
 		}),
 	],
