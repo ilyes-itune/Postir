@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.editorconfig'
+      - '.gitignore'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.editorconfig'
+      - '.gitignore'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: 🏗 Setup Electron
+        uses: ./.github/actions/setup-electron
+
+      - name: 🏗 Add RXDB_LICENSE_KEY to package.json
+        env:
+          RXDB_LICENSE_KEY: ${{ secrets.RXDB_LICENSE_KEY }}
+        run: jq --arg license "$RXDB_LICENSE_KEY" '.accessTokens["rxdb-premium"] = $license' package.json > tmp.json && mv tmp.json package.json
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: 🧪 Test
+        run: |
+          pnpm lint
+          pnpm exec tsc
+          pnpm test

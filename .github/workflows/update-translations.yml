@@ -1,0 +1,51 @@
+name: Update Translation Version
+
+on:
+  repository_dispatch:
+    types: [translation-release]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.TRANSLATION_APP_ID }}
+          private-key: ${{ secrets.TRANSLATION_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update translation version
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          # Validate version format (CalVer: YYYY.M.P)
+          if [[ ! "$VERSION" =~ ^[0-9]{4}\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Invalid version format: $VERSION"
+            exit 1
+          fi
+          echo "Updating translation version to $VERSION"
+          sed -i "s/TRANSLATION_VERSION = '.*'/TRANSLATION_VERSION = '${VERSION}'/" src/main/translations/index.ts
+
+      - name: Create PR
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/main/translations/index.ts
+          if ! git diff --staged --quiet; then
+            BRANCH="chore/translation-version-${VERSION}"
+            git checkout -b "$BRANCH"
+            git commit -m "chore: update translation version to ${VERSION}"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
+            gh pr create \
+              --title "chore: update translation version to ${VERSION}" \
+              --body "Automated PR to update translation version to ${VERSION}." \
+              --base main
+          fi
