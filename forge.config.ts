@@ -1,11 +1,10 @@
-import { rmSync } from 'fs';
 import path from 'path';
 
-import { MakerSquirrel } from '@electron-forge/maker-squirrel';
+import { MakerZIP } from '@electron-forge/maker-zip';
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 import { PublisherGithub } from '@electron-forge/publisher-github';
 import { move, pathExists, remove } from 'fs-extra';
-import { MakerZIP } from '@electron-forge/maker-zip';
+
 import pkg from './package.json';
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
@@ -29,12 +28,8 @@ const config: ForgeConfig = {
 	},
 	rebuildConfig: {},
 	hooks: {
-		packageAfterPrune: async (forgeConfig, buildPath, electronVersion, platform, arch) => {
-			const sqliteBuildPath = path.join(buildPath, 'node_modules', 'better-sqlite3', 'build');
-			rmSync(sqliteBuildPath, {
-				recursive: true,
-				force: true,
-			});
+		packageAfterPrune: async () => {
+			// build SQLite natif conservé — nécessaire sur Windows
 		},
 		postMake: async (forgeConfig, makeResults) => {
 			for (const result of makeResults) {
@@ -42,14 +37,12 @@ const config: ForgeConfig = {
 					const parsedPath = path.parse(artifactPath);
 					const newBaseName = parsedPath.base.replace(/ /g, '-');
 					const newArtifactPath = path.join(parsedPath.dir, newBaseName);
-
 					if (artifactPath !== newArtifactPath) {
 						if (await pathExists(newArtifactPath)) {
 							await remove(newArtifactPath);
 						}
 						await move(artifactPath, newArtifactPath);
 					}
-
 					result.artifacts = result.artifacts.map((artifact) =>
 						artifact === artifactPath ? newArtifactPath : artifact
 					);
